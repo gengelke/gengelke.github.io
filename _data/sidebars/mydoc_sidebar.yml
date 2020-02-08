@@ -2,8 +2,11 @@
 
 entries:
 - title: sidebar
-  product: Jekyll Doc Theme
-  version: 6.0
+#  product: gengelke
+#  product: gengelke.github.io
+  product:
+#  version: 47.11
+  version:
   folders:
 
   - title:

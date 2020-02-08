@@ -13,10 +13,12 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav navbar-right">
                 <!-- toggle sidebar button -->
+<!--                <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
                 <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li>
                 <!-- entries without drop-downs appear here -->
 
 {% assign topnav = site.data[page.topnav] %}
+{% assign topnav_contacts = site.data[page.topnav].topnav_contacts %}
 {% assign topnav_dropdowns = site.data[page.topnav].topnav_dropdowns %}
 
                 {% for entry in topnav.topnav %}
@@ -27,6 +29,23 @@
                 <li class="active"><a href="{{item.url | remove: "/"}}">{{item.title}}</a></li>
                 {% else %}
                 <li><a href="{{item.url | remove: "/"}}">{{item.title}}</a></li>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+                <!-- entries for contact info appear here -->
+                {% for entry in topnav_contacts %}
+                {% for item in entry.items %}
+                {% if item.twitter %}
+                <li><a href="{{item.twitter}}" target="_blank" rel="noopener"><i class="fa fa-twitter"></i>&nbsp;{{item.title}}</a></li>
+                {% endif %}
+                {% if item.github %}
+                <li><a href="{{item.github}}" target="_blank" rel="noopener"><i class="fa fa-github"></i>&nbsp;{{item.title}}</a></li>
+                {% endif %}
+                {% if item.about %}
+                <li><a href="{{item.about}}" target="_blank" rel="noopener"><i class="fa fa-info-circle"></i>&nbsp;{{item.title}}</a></li>
+                {% endif %}
+                {% if item.mail %}
+                <li><a href="{{item.mail}}" target="_blank" rel="noopener"><i class="fa fa-envelope"></i>&nbsp;{{item.title}}</a></li>
                 {% endif %}
                 {% endfor %}
                 {% endfor %}

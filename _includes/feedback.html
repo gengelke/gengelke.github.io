@@ -2,9 +2,8 @@
 {% if site.feedback_text %}
   {% assign feedback_text = site.feedback_text %}
 {% else %}
-  {% assign feedback_text = "Feedback" %}
+  {% assign feedback_text = "Mail" %}
 {% endif %}
-
 {% if site.feedback_link %}
   <a class="email" title="Submit feedback" href="{{site.feedback_link}}">{{feedback_text}}</a>
 {% else %}

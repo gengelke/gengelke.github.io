@@ -1,13 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
-        <title>documentation-theme-jekyll</title>
-        <description>Intended as a documentation theme based on Jekyll for technical writers documenting software and other technical products, this theme has all the elements you would need to handle multiple products with both multi-level sidebar navigation, tags, and other documentation features.</description>
+        <title>gengelke.github.io</title>
+        <description>This is where I document everything I do and learn.</description>
         <link>http://localhost:4000/</link>
         <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-        <pubDate>Sat, 08 Feb 2020 19:02:51 +0100</pubDate>
-        <lastBuildDate>Sat, 08 Feb 2020 19:02:51 +0100</lastBuildDate>
+        <pubDate>Sat, 08 Feb 2020 21:47:38 +0100</pubDate>
+        <lastBuildDate>Sat, 08 Feb 2020 21:47:38 +0100</lastBuildDate>
         <generator>Jekyll v3.8.5</generator>
+        
+        <item>
+            <title>Die Kuh macht muh</title>
+            <description>&lt;p&gt;Die Kuh macht muh.&lt;/p&gt;
+</description>
+            <pubDate>Thu, 12 Apr 2018 00:00:00 +0200</pubDate>
+            <link>http://localhost:4000/die-kuh-macht-muh.html</link>
+            <guid isPermaLink="true">http://localhost:4000/die-kuh-macht-muh.html</guid>
+            
+            <category>news</category>
+            
+            <category>hugo</category>
+            
+            
+        </item>
         
         <item>
             <title>Sample post</title>
