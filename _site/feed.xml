@@ -1,0 +1,869 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2020-02-08T17:37:36+01:00</updated><id>http://localhost:4000/feed.xml</id><subtitle>Wer schreibt der bleibt.</subtitle><author><name>Gordon Engelke</name></author><entry><title type="html">Plotting With Matplotlib</title><link href="http://localhost:4000/Plotting-with-Matplotlib/" rel="alternate" type="text/html" title="Plotting With Matplotlib" /><published>2019-12-24T00:00:00+01:00</published><updated>2019-12-24T00:00:00+01:00</updated><id>http://localhost:4000/Plotting-with-Matplotlib</id><content type="html" xml:base="http://localhost:4000/Plotting-with-Matplotlib/">&lt;p&gt;Plotting with matplotlib is really confusing. Understanding how it works
+under the hood helps to alleviate this pain enormously. This short blog post
+is here to help you on the way to matplotlib enlightenment.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-12-24-matplotlib/matplotlib.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Let’s jump right in!&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;matplotlib.pyplot&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;key-takeaways&quot;&gt;Key takeaways&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;It is useful to understand object hierarchy that matplotlib uses&lt;/li&gt;
+  &lt;li&gt;What we think of as a “figure” is an Axes object in matplotlib terminology&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;ax.plot()&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;plt.plot()&lt;/code&gt;, etc. are all wrappers for the same functionality&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;understand-the-matplotlib-object-hierarchy&quot;&gt;Understand the matplotlib object hierarchy&lt;/h1&gt;
+
+&lt;p&gt;The first thing one must understand is the object-oriented hierarchy
+that matplotlib uses. Without having a clear picture of this hierarchy in mind, the
+terminology that matplotlib uses is very confusing.&lt;/p&gt;
+
+&lt;p&gt;The following image clearly illustrates the object hierarcy that is used.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-12-24-matplotlib/matplotlib_hierarchy.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The object hierarchy is as follows:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;A &lt;strong&gt;Figure&lt;/strong&gt; object can be thought of as the box or outermost container for any matplotlib graphic.
+    &lt;ul&gt;
+      &lt;li&gt;A Figure object can have multiple &lt;strong&gt;Axes&lt;/strong&gt; objects. This thing right here is what makes the terminology so confusing, think of the Axes object simply as an individual plot or graph.
+        &lt;ul&gt;
+          &lt;li&gt;An Axes object has two &lt;strong&gt;Axis&lt;/strong&gt; objects (x-axis and y-axis)&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Basically, the hierarchy is as follows: Figure, Axes, Axis and all other stuff that goes on a plot. The Figure object can be thought of as the external container. This container can have multiple Axes objects. Basically it all boils down to this:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Your Axes object is what you would normally think of as a single “figure”&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h1 id=&quot;realise-that-you-are-really-only-manipulating-one-axes-this-is-not-a-typo&quot;&gt;Realise that you are really only manipulating one Axes (this is not a typo)&lt;/h1&gt;
+
+&lt;p&gt;With this object hierarchy and terminology firmly in place, we can get to the
+crux of the problem. You &lt;strong&gt;have to realise&lt;/strong&gt; the following key concept:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“[With pyplot], simple functions are used to add plot elements (lines,
+images, text, etc.) to &lt;strong&gt;the current Axes in the current figure&lt;/strong&gt;.” [emphasis
+added]&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The key point here is that you are only manipulating one Axes object at a
+time. Functions like &lt;code class=&quot;highlighter-rouge&quot;&gt;gca()&lt;/code&gt; refer to &lt;code class=&quot;highlighter-rouge&quot;&gt;getCurrentAxes()&lt;/code&gt; which basically
+grabs the current Axes so you can work on it.&lt;/p&gt;
+
+&lt;h1 id=&quot;example&quot;&gt;Example&lt;/h1&gt;
+
+&lt;p&gt;Running the following piece of code (&lt;a href=&quot;https://realpython.com/python-matplotlib-guide/&quot;&gt;source&lt;/a&gt;) results in the following image.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;matplotlib.pyplot&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt; 
+
+&lt;span class=&quot;n&quot;&gt;rng&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;arange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;rnd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;random&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;randint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rng&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;yrs&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1950&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rng&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;labels&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'Eastasia'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'Eurasia'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'Oceania'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;fig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;subplots&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;figsize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;stackplot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;yrs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rng&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rnd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;labels&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;labels&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Combined debt growth over time&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'best'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_ylabel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Total debt&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_xlim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xmin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;yrs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xmax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;yrs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;show&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-12-24-matplotlib/stackplot.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With our newfound knowledge we can better understand what &lt;em&gt;really&lt;/em&gt; happens in this simple plotting exercise.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Create Figure/Axes object (and set Figure size)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;fig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;subplots&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;figsize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# On the Axes object called ax, make a stackplot&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;stackplot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;yrs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rng&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rnd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;labels&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;labels&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# On the Axes object called ax, set the title&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Combined debt growth over time&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# On the Axes object called ax, ... you get it now ... &lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'best'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;extra-deep-dive-into-matplotlib-source-code&quot;&gt;Extra: Deep dive into matplotlib source code&lt;/h1&gt;
+
+&lt;p&gt;The matplotlib source code is actually &lt;a href=&quot;https://github.com/matplotlib/matplotlib&quot;&gt;open source&lt;/a&gt; so we can dive into the code and see what actually happens.&lt;/p&gt;
+
+&lt;p&gt;We ask ourselves: what &lt;em&gt;really&lt;/em&gt; happens when we add the legend the Axes object?&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'best)&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We look in the &lt;a href=&quot;https://matplotlib.org/3.1.1/_modules/matplotlib/pyplot.html#legend&quot;&gt;docs&lt;/a&gt; for &lt;code class=&quot;highlighter-rouge&quot;&gt;matplotlib.pyplot.legend&lt;/code&gt;. The documentation clearly states (&lt;strong&gt;in langauge we understand now!&lt;/strong&gt;): “Place a legend on the axes.” Where “axes” refers to the Axes object, which can trip you up if you’re not familiar with the terminology.&lt;/p&gt;
+
+&lt;p&gt;Searching for the legend function in the source code we come across this piece of code.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Autogenerated by boilerplate.py.  Do not edit as changes will be lost.&lt;/span&gt;
+&lt;span class=&quot;nd&quot;&gt;@docstring.copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Axes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;kwargs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gca&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;kwargs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Huh, so calling &lt;code class=&quot;highlighter-rouge&quot;&gt;Axes.legend&lt;/code&gt; actually returns &lt;code class=&quot;highlighter-rouge&quot;&gt;gca().legend()&lt;/code&gt; with arguments. But what is &lt;code class=&quot;highlighter-rouge&quot;&gt;gca()&lt;/code&gt; then?&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;gca&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;kwargs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;
+    Get the current :class:`~matplotlib.axes.Axes` instance on the
+    current figure matching the given keyword args, or create one.
+
+    Examples
+    --------
+    To get the current polar axes on the current figure::
+
+        plt.gca(projection='polar')
+
+    If the current axes doesn't exist, or isn't a polar one, the appropriate
+    axes will be created and then returned.
+
+    See Also
+    --------
+    matplotlib.figure.Figure.gca : The figure's gca method.
+    &quot;&quot;&quot;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gcf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gca&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;kwargs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Interesting. So by trying to add the legend to the Axes object, we try to grab the current Axes object and then try to add the legend to that. But, this function is simply a wrapper on &lt;code class=&quot;highlighter-rouge&quot;&gt;gcf()&lt;/code&gt; and one more layer down the rabbit hole we go.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;gcf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;
+    Get the current figure.
+
+    If no current figure exists, a new one is created using
+    `~.pyplot.figure()`.
+    &quot;&quot;&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;figManager&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_pylab_helpers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Gcf&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;get_active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;figManager&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;is&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;figManager&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;canvas&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;figure&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;figure&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Finally, we either create a new figure or find the current one. Wew. That went one, two, three layers deep. Let’s dive back up and recap what exactly happens when we try to add a legend to our Axes object (our “figure”).&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# We try to add the legend to the Axes object&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'best'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# This tries to grab current axes, gca(), and add it&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;gca&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'best'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# gca() tries to grab the current figure, gcf()&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;gcf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gca&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'best'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# We add the legend on the Figure &amp;gt; Axes &amp;gt; legend hierarchy&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;figManager&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;canvas&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;figure&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gca&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'best'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That’s it!&lt;/p&gt;
+
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;If I were to leave you with just three things to remember from this post, I’d tell you these three:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Matplotlib terminology is confusing, just remember that your Axes object is basically a plot.&lt;/li&gt;
+  &lt;li&gt;Keep in mind the Matplotlib object hierarchy (Figure, Axes, Axis)&lt;/li&gt;
+  &lt;li&gt;Realise that you are only really manipulating one Axes at a time!&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Gordon Engelke</name></author><summary type="html">Plotting with matplotlib is really confusing. Understanding how it works under the hood helps to alleviate this pain enormously. This short blog post is here to help you on the way to matplotlib enlightenment.</summary></entry><entry><title type="html">Regex For Noobs (like me!) - An Illustrated Guide</title><link href="http://localhost:4000/blog/regex-for-noobs/" rel="alternate" type="text/html" title="Regex For Noobs (like me!) - An Illustrated Guide" /><published>2019-08-04T00:00:00+02:00</published><updated>2019-08-04T00:00:00+02:00</updated><id>http://localhost:4000/blog/regex-for-noobs</id><content type="html" xml:base="http://localhost:4000/blog/regex-for-noobs/">&lt;p&gt;This blog post is an illustrated guide to regex and aims to provide a
+gentle introduction for people who never have fiddled with regex, want
+to, but are kind of intimidated by the whole thing.&lt;/p&gt;
+
+&lt;p&gt;In other words, welcome to …&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-08-01-regex/regex-for-noobs.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;For most people without a formal CS education, regular expressions
+(regex) can come off as something that only the most hardcore unix
+programmers would dare to touch.&lt;/p&gt;
+
+&lt;p&gt;A good regex can seem like magic, but remember this: any technology
+sufficiently advanced enough is indistinguishable from magic. So,
+let’s peel away at the magic of regex and see what’s underneath!&lt;/p&gt;
+
+&lt;p&gt;If you understand regex it suddenly becomes this super fast and
+powerful tool … but you first need to understand it, and honestly I
+find it a bit intimidating for newcomers!&lt;/p&gt;
+
+&lt;p&gt;Let’s start with the basics. What are regular expressions (regex) and what are they used for?&lt;/p&gt;
+
+&lt;h1 id=&quot;regex-for-noobs&quot;&gt;Regex for noobs&lt;/h1&gt;
+
+&lt;p&gt;At its core, a regular expression is a &lt;strong&gt;sequence of characters
+defining a search pattern&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Regex is often used in tools like &lt;code class=&quot;highlighter-rouge&quot;&gt;grep&lt;/code&gt; to find patterns in longer strings of text.&lt;/p&gt;
+
+&lt;p&gt;Consider a file &lt;code class=&quot;highlighter-rouge&quot;&gt;cat.txt&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat
+&lt;/span&gt;cat2
+dog
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If we use the regex &lt;code class=&quot;highlighter-rouge&quot;&gt;cat&lt;/code&gt; to search for matches we find the following matches.&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat
+&lt;/span&gt;cat2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;(Note for the hardcore powerusers: In this post I’m going to conflate
+the terms regex and the tools that use regex such as grep. This is
+technically wrong, I am aware of this.)&lt;/p&gt;
+
+&lt;h1 id=&quot;regex-works-on-characters-not-words&quot;&gt;Regex works on characters, not words&lt;/h1&gt;
+
+&lt;p&gt;One important thing that can not be emphasized enough is this: &lt;strong&gt;regex
+works on characters, not words&lt;/strong&gt;.  Concatenation is implied.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-08-01-regex/cat.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If we search using regex for the pattern &lt;code class=&quot;highlighter-rouge&quot;&gt;cat&lt;/code&gt;, we are
+not looking for the word “cat”, but we are looking for &lt;code class=&quot;highlighter-rouge&quot;&gt;c&lt;/code&gt; followed by
+&lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt; followed by &lt;code class=&quot;highlighter-rouge&quot;&gt;t&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h1 id=&quot;the-dot-and-the-asterisk&quot;&gt;The dot and the asterisk&lt;/h1&gt;
+
+&lt;p&gt;The most basic characters are the single characters, like &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt;,
+&lt;code class=&quot;highlighter-rouge&quot;&gt;c&lt;/code&gt;, etc. Now let’s introduce two special guests.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-08-01-regex/two-special-guests.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;.&lt;/code&gt; (dot) character matches &lt;strong&gt;any single character&lt;/strong&gt;. For example, if we
+search for &lt;code class=&quot;highlighter-rouge&quot;&gt;c.t&lt;/code&gt; we would match anything ranging from &lt;code class=&quot;highlighter-rouge&quot;&gt;cat&lt;/code&gt; to &lt;code class=&quot;highlighter-rouge&quot;&gt;c0t&lt;/code&gt;
+or &lt;code class=&quot;highlighter-rouge&quot;&gt;cAt&lt;/code&gt;, we would match any single &lt;code class=&quot;highlighter-rouge&quot;&gt;c&lt;/code&gt; followed by any character
+followed by a single &lt;code class=&quot;highlighter-rouge&quot;&gt;t&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;*&lt;/code&gt; (asterisk) character is a bit more difficult. It modifies the
+character preceding it and then matches &lt;strong&gt;zero or more characters&lt;/strong&gt; of
+that. Yes, read that again, zero or more characters. For example,
+&lt;code class=&quot;highlighter-rouge&quot;&gt;cat*&lt;/code&gt; would match &lt;code class=&quot;highlighter-rouge&quot;&gt;cat&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;catt&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;cattttt&lt;/code&gt; but &lt;em&gt;also&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;ca&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h1 id=&quot;the-cat-ate-my-homework&quot;&gt;The cat ate my homework&lt;/h1&gt;
+
+&lt;p&gt;Imagine we read in a file line by line and the first line is as follows.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;The cat ate my homework.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s look at how we would match the pattern &lt;code class=&quot;highlighter-rouge&quot;&gt;cat&lt;/code&gt; in this line.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-08-01-regex/cat-match.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We start with matching the first character of the pattern to the first
+character in the sentence.&lt;/p&gt;
+
+&lt;p&gt;If we don’t find a match we skip to the next character in the line and
+start from the first character of the pattern.&lt;/p&gt;
+
+&lt;p&gt;If we do find a match we go to the next character in both the pattern
+and the line and repeat this process. When we find a match for the
+whole pattern we return the line in which we find a match.&lt;/p&gt;
+
+&lt;p&gt;That’s it! That’s what regex is most often used for at its most basic
+level, to find a smaller search pattern in a larger string.&lt;/p&gt;
+
+&lt;p&gt;So far we’ve gone over what regex is and two of the special
+characters, the &lt;code class=&quot;highlighter-rouge&quot;&gt;.&lt;/code&gt; (dot) and the &lt;code class=&quot;highlighter-rouge&quot;&gt;*&lt;/code&gt; (asterisk), but wait, there’s
+more.&lt;/p&gt;
+
+&lt;h1 id=&quot;the-regex-trifecta&quot;&gt;The regex trifecta&lt;/h1&gt;
+
+&lt;p&gt;Zooming out a little bit, the parts of a regex can consist of three different components:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Anchors&lt;/li&gt;
+  &lt;li&gt;Character sets&lt;/li&gt;
+  &lt;li&gt;Modifiers&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;These three make up the … regex trifecta!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-08-01-regex/trifecta.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Let’s start with the first part of the trifecta: anchors!&lt;/p&gt;
+
+&lt;h1 id=&quot;anchors&quot;&gt;Anchors&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-08-01-regex/anchors.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Anchors specify the position of the pattern with respect to the
+line. These are the two most important anchors:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;^&lt;/code&gt; (caret) fixes your pattern to the beginning of the line. For
+example the pattern &lt;code class=&quot;highlighter-rouge&quot;&gt;^1&lt;/code&gt; matches any line starting with a &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;$&lt;/code&gt; (dollar) fixes your pattern to the end of the sentence. For
+example, &lt;code class=&quot;highlighter-rouge&quot;&gt;9$&lt;/code&gt; matches any line ending with a &lt;code class=&quot;highlighter-rouge&quot;&gt;9&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note that in both cases the pattern has to be respectively first and
+last in the pattern. &lt;code class=&quot;highlighter-rouge&quot;&gt;^1&lt;/code&gt; matches a &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt; at the start of a line but
+&lt;code class=&quot;highlighter-rouge&quot;&gt;1^&lt;/code&gt; matches a &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt; followed by a &lt;code class=&quot;highlighter-rouge&quot;&gt;^&lt;/code&gt;. Similarly, &lt;code class=&quot;highlighter-rouge&quot;&gt;1$&lt;/code&gt; matches lines
+ending with a &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt; but &lt;code class=&quot;highlighter-rouge&quot;&gt;$1&lt;/code&gt; matches a dollar sign followed by a &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt;
+anywhere on the line.&lt;/p&gt;
+
+&lt;p&gt;On to the second part of the trifecta: character sets!&lt;/p&gt;
+
+&lt;h1 id=&quot;character-sets&quot;&gt;Character sets&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-08-01-regex/character-sets.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The second part of the trifecta: character sets. Character sets are
+the bread and butter of regex. A single character, say &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt;, is the
+most atomic character set (a set of one element). But we can do crazy
+stuff with regex like &lt;code class=&quot;highlighter-rouge&quot;&gt;[0-9]&lt;/code&gt; which matches any single digit, or if
+you recall what &lt;code class=&quot;highlighter-rouge&quot;&gt;*&lt;/code&gt; does we can make the pattern &lt;code class=&quot;highlighter-rouge&quot;&gt;[0-9][0-9]*&lt;/code&gt; (what
+this pattern matches is left as an exercise to the reader).&lt;/p&gt;
+
+&lt;p&gt;Some other important character sets:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;[0-9]&lt;/code&gt; matches any single digit from &lt;code class=&quot;highlighter-rouge&quot;&gt;0...9&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;[a-z]&lt;/code&gt; matches any lowercase character&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;[A-Z]&lt;/code&gt; matches any uppercase characer&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We can also combine multiple sets:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;[A-Za-z0-9]&lt;/code&gt; matches any uppercase and lowercase letter and single digit.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Finally, modifiers.&lt;/p&gt;
+
+&lt;h1 id=&quot;modifiers&quot;&gt;Modifiers&lt;/h1&gt;
+
+&lt;p&gt;I don’t want to get too much into depth here, but we already came
+across a modifier!  The &lt;code class=&quot;highlighter-rouge&quot;&gt;*&lt;/code&gt; (asterisk) is a modifier. A modifier
+changes the meaning of the character preceding it. There are many
+other modifiers but starting with &lt;code class=&quot;highlighter-rouge&quot;&gt;*&lt;/code&gt; is a good start.&lt;/p&gt;
+
+&lt;h1 id=&quot;an-actual-example&quot;&gt;An actual example&lt;/h1&gt;
+
+&lt;p&gt;Let’s quickly dump some text in a file&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;The cat jumps long time &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;Then we also have the fact that these are words.&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;1234 this is a test post please ignore.&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; grep.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This is what’s in the file now&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;grep.txt
+The &lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;jumps long &lt;span class=&quot;nb&quot;&gt;time
+&lt;/span&gt;Then we also have the fact that these are words.
+1234 this is a &lt;span class=&quot;nb&quot;&gt;test &lt;/span&gt;post please ignore.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s look for &lt;code class=&quot;highlighter-rouge&quot;&gt;cat&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;cat&quot;&lt;/span&gt; grep.txt
+The &lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;jumps long &lt;span class=&quot;nb&quot;&gt;time&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s look for any line starting with a digit &lt;code class=&quot;highlighter-rouge&quot;&gt;^[0-9]&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;^[0-9]&quot;&lt;/span&gt; grep.txt
+1234 this is a &lt;span class=&quot;nb&quot;&gt;test &lt;/span&gt;post please ignore.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That’s it! You just used regular expressions. Awesome.&lt;/p&gt;
+
+&lt;h1 id=&quot;summary&quot;&gt;Summary&lt;/h1&gt;
+
+&lt;p&gt;In this blog post we went over:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Basic functionality of regex&lt;/li&gt;
+  &lt;li&gt;The three main components of regex: anchors, character sets, and modifiers.&lt;/li&gt;
+  &lt;li&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;.&lt;/code&gt; (dot), &lt;code class=&quot;highlighter-rouge&quot;&gt;*&lt;/code&gt; (asterisk), &lt;code class=&quot;highlighter-rouge&quot;&gt;^&lt;/code&gt; (caret), and &lt;code class=&quot;highlighter-rouge&quot;&gt;$&lt;/code&gt; (dollar sign).&lt;/li&gt;
+  &lt;li&gt;Some character sets &lt;code class=&quot;highlighter-rouge&quot;&gt;[0-9]&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;[a-z]&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;[A-Z]&lt;/code&gt;, and combinations.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The goal of this blog post was to make regex a bit more approachable by
+means of an illustrated introduction.&lt;/p&gt;
+
+&lt;p&gt;If you peel away at the technical difficulties what you end up with is
+a relatively simple but super powerful tool that will prove invaluable
+in any data scientists’ toolbelt.&lt;/p&gt;
+
+&lt;h1 id=&quot;subscribe&quot;&gt;Subscribe&lt;/h1&gt;
+
+&lt;!-- Begin Mailchimp Signup Form --&gt;
+&lt;link href=&quot;//cdn-images.mailchimp.com/embedcode/horizontal-slim-10_7.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+  #mc_embed_signup{background:#fff; clear:left; font:14px Helvetica,Arial,sans-serif; width:100%;}
+  /* Add your own Mailchimp form style overrides in your site stylesheet or in this style block.
+     We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
+&lt;/style&gt;
+
+&lt;div id=&quot;mc_embed_signup&quot;&gt;
+&lt;form action=&quot;https://gmail.us3.list-manage.com/subscribe/post?u=92fe86c389878585bc87837e8&amp;amp;id=50543deff9&quot; method=&quot;post&quot; id=&quot;mc-embedded-subscribe-form&quot; name=&quot;mc-embedded-subscribe-form&quot; class=&quot;validate&quot; target=&quot;_blank&quot; novalidate=&quot;&quot;&gt;
+    &lt;div id=&quot;mc_embed_signup_scroll&quot;&gt;
+  &lt;label for=&quot;mce-EMAIL&quot;&gt;Liked this article and want to hear more?&lt;/label&gt;
+  &lt;input type=&quot;email&quot; value=&quot;&quot; name=&quot;EMAIL&quot; class=&quot;email&quot; id=&quot;mce-EMAIL&quot; placeholder=&quot;email address&quot; required=&quot;&quot; /&gt;
+    &lt;!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups--&gt;
+    &lt;div style=&quot;position: absolute; left: -5000px;&quot; aria-hidden=&quot;true&quot;&gt;&lt;input type=&quot;text&quot; name=&quot;b_92fe86c389878585bc87837e8_50543deff9&quot; tabindex=&quot;-1&quot; value=&quot;&quot; /&gt;&lt;/div&gt;
+    &lt;div class=&quot;clear&quot;&gt;&lt;input type=&quot;submit&quot; value=&quot;Subscribe&quot; name=&quot;subscribe&quot; id=&quot;mc-embedded-subscribe&quot; class=&quot;button&quot; /&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/form&gt;
+&lt;/div&gt;
+
+&lt;!--End mc_embed_signup--&gt;</content><author><name>Gordon Engelke</name></author><category term="Jekyll" /><category term="update" /><summary type="html">This blog post is an illustrated guide to regex and aims to provide a gentle introduction for people who never have fiddled with regex, want to, but are kind of intimidated by the whole thing.</summary></entry><entry><title type="html">The Maker vs Manager Problem</title><link href="http://localhost:4000/blog/makers-vs-manager/" rel="alternate" type="text/html" title="The Maker vs Manager Problem" /><published>2019-07-26T00:00:00+02:00</published><updated>2019-07-26T00:00:00+02:00</updated><id>http://localhost:4000/blog/makers-vs-manager</id><content type="html" xml:base="http://localhost:4000/blog/makers-vs-manager/">&lt;p&gt;It’s well known that programmers dislike meetings… &lt;em&gt;a lot&lt;/em&gt;. But have
+you ever wondered why programmers dislike meetings so much compared to
+other people? The answer is simple but obvious once pointed out:
+meetings are more costly to them.&lt;/p&gt;
+
+&lt;p&gt;I’m sure many programmers can relate to this comic.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-07-25-maker-vs-manager/comic.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This blog is about the two stick figures from the comic: the maker and
+the manager and the fundamental problem that occurs when their
+schedules meet.&lt;/p&gt;
+
+&lt;p&gt;Note: Much of the content of this blog post is borrowed from
+&lt;a href=&quot;http://www.paulgraham.com/makersschedule.html&quot;&gt;this&lt;/a&gt; essay by Paul
+Graham. It was written in July 2009, more than 10 years ago!  If you
+can find the time I highly recommend the original essay, it’s a
+classic.&lt;/p&gt;
+
+&lt;h2 id=&quot;takeaway&quot;&gt;Takeaway&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;For managers:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Understand that the cost of an interruption is significantly higher
+for makers than for managers.&lt;/li&gt;
+  &lt;li&gt;The next time you want to interrupt a programmer deep in thought,
+think of the comic.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;For makers:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Understand that managers operate on a different day-to-day schedule than you
+do and respect that.&lt;/li&gt;
+  &lt;li&gt;Clearly communicate that you need long stretches of uninterrupted
+time to deliver great work, but be willing to compromise.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;makers-schedule-managers-schedule&quot;&gt;Maker’s schedule, manager’s schedule&lt;/h2&gt;
+
+&lt;p&gt;In his essay, Graham argues that there are two different types of
+schedules, which he calls the &lt;strong&gt;maker’s schedule&lt;/strong&gt; and the &lt;strong&gt;manager’s schedule&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;The manager’s schedule can be thought of the traditional calendar. The
+day is neatly sliced into hours.  You can schedule more than 1 hour
+for an appointment or meeting but by default you can switch tasks
+every hour or 30 minutes.&lt;/p&gt;
+
+&lt;p&gt;The maker’s schedule is different. The maker’s schedule is for
+programmers and writers who prefer longer stretches of uninterrupted
+time. For a writer or programmer it takes time to get started, it is
+difficult to produce something truly valuable in half an hour.&lt;/p&gt;
+
+&lt;p&gt;For people on the maker’s schedule, ill-planned meetings come with a
+cost that is both high and not immediately obvious. &lt;strong&gt;A single meeting
+can ruin a whole morning by breaking up a long period into just short
+enough periods where exactly nothing of value can be produced.&lt;/strong&gt;
+Meetings are like the interruptions from the comic, but on a macro
+level.&lt;/p&gt;
+
+&lt;p&gt;Consider a single meeting from 10:00-11:00.&lt;/p&gt;
+
+&lt;p&gt;The programmer dutifully arrives at the office at 9:00. After the
+daily stand-up it’s 9:15 and now he has exactly 45 minutes to get
+some programming done. But he knows that he has a meeting at 10 so
+he will probably not be able to program until 10:00 exactly because of
+the meeting. It’s 9:30 already, shit. I’d better prepare for the
+meeting. Of course, the meeting is scheduled to 11:00 but runs
+slightly longer and after the meeting you grab a coffee with your
+coworkers. Now it’s 11:15 and you have 45 minutes to lunch. The
+programmer now has to decide whether he is going to spend 20
+minutes getting into the flow to spend a mere 25 minutes
+programming until lunchtime.&lt;/p&gt;
+
+&lt;p&gt;Narrator: &lt;em&gt;He didn’t.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The problem is that most powerful people are on the manager’s
+schedule. That’s the reason it’s called the manager’s schedule. Your
+manager (your boss) is most likely, without realizing it, on the
+manager’s schedule. This is also why its more likely that the maker
+will conform to the manager’s schedule, he is your boss after all.&lt;/p&gt;
+
+&lt;p&gt;This is the crux of the whole problem. Two different types of people
+with two different types of schedules. The problem is clear, but what
+about solutions?&lt;/p&gt;
+
+&lt;p&gt;Graham offers three solutions. The first one is using office hours to
+simulate a manager’s schedule inside a maker’s schedule.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;How do we manage to advise so many startups on the maker’s schedule?
+By using the classic device for simulating the manager’s schedule
+within the maker’s: office hours. Several times a week I set aside a
+chunk of time to meet founders we’ve funded. These chunks of time are
+at the end of my working day, and I wrote a signup program that
+ensures all the appointments within a given set of office hours are
+clustered at the end. Because they come at the end of my day these
+meetings are never an interruption.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The second solution comes from Graham’s personal experience, but I
+doubt that this is sustainable in any other environment than a
+start-up.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;When we were working on our own startup, back in the 90s, I evolved
+another trick for partitioning the day. I used to program from dinner
+till about 3 am every day, because at night no one could interrupt
+me. Then I’d sleep till about 11 am, and come in and work until dinner
+on what I called “business stuff.” I never thought of it in these
+terms, but in effect I had two workdays each day, one on the manager’s
+schedule and one on the maker’s.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;For the third solution we continue to the closing remarks.&lt;/p&gt;
+
+&lt;h2 id=&quot;closing-remarks&quot;&gt;Closing remarks&lt;/h2&gt;
+
+&lt;p&gt;It feels incredibly lazy to simply copy Graham’s words again, but they
+still ring true today, ten years later.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Till recently we weren’t clear in our own minds about the source of
+the problem. We just took it for granted that we had to either blow
+our schedules or offend people. But now that I’ve realized what’s
+going on, perhaps there’s a third option: to write something
+explaining the two types of schedule. Maybe eventually, if the
+conflict between the manager’s schedule and the maker’s schedule
+starts to be more widely understood, it will become less of a problem.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;This is the third solution: hope and optimism. To write something
+clearly explaining the problem and then hoping it goes away on its
+own. Wishful thinking, but good wishful thinking nonetheless.  In
+writing this essay I’ve been perhaps just as naive as Graham himself
+by believing in the idea that if we can show people the problem that it
+vanishes into thin air - exactly like the programmer’s deep
+thoughts when interrupted.&lt;/p&gt;
+
+&lt;p&gt;It is said that time reveals the truth and maybe, just maybe, we can
+do more about it in the coming ten years.&lt;/p&gt;
+
+&lt;h1 id=&quot;subscribe&quot;&gt;Subscribe&lt;/h1&gt;
+
+&lt;!-- Begin Mailchimp Signup Form --&gt;
+&lt;link href=&quot;//cdn-images.mailchimp.com/embedcode/horizontal-slim-10_7.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+  #mc_embed_signup{background:#fff; clear:left; font:14px Helvetica,Arial,sans-serif; width:100%;}
+  /* Add your own Mailchimp form style overrides in your site stylesheet or in this style block.
+     We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
+&lt;/style&gt;
+
+&lt;div id=&quot;mc_embed_signup&quot;&gt;
+&lt;form action=&quot;https://gmail.us3.list-manage.com/subscribe/post?u=92fe86c389878585bc87837e8&amp;amp;id=50543deff9&quot; method=&quot;post&quot; id=&quot;mc-embedded-subscribe-form&quot; name=&quot;mc-embedded-subscribe-form&quot; class=&quot;validate&quot; target=&quot;_blank&quot; novalidate=&quot;&quot;&gt;
+    &lt;div id=&quot;mc_embed_signup_scroll&quot;&gt;
+  &lt;label for=&quot;mce-EMAIL&quot;&gt;Liked this article and want to hear more?&lt;/label&gt;
+  &lt;input type=&quot;email&quot; value=&quot;&quot; name=&quot;EMAIL&quot; class=&quot;email&quot; id=&quot;mce-EMAIL&quot; placeholder=&quot;email address&quot; required=&quot;&quot; /&gt;
+    &lt;!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups--&gt;
+    &lt;div style=&quot;position: absolute; left: -5000px;&quot; aria-hidden=&quot;true&quot;&gt;&lt;input type=&quot;text&quot; name=&quot;b_92fe86c389878585bc87837e8_50543deff9&quot; tabindex=&quot;-1&quot; value=&quot;&quot; /&gt;&lt;/div&gt;
+    &lt;div class=&quot;clear&quot;&gt;&lt;input type=&quot;submit&quot; value=&quot;Subscribe&quot; name=&quot;subscribe&quot; id=&quot;mc-embedded-subscribe&quot; class=&quot;button&quot; /&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/form&gt;
+&lt;/div&gt;
+
+&lt;!--End mc_embed_signup--&gt;</content><author><name>Gordon Engelke</name></author><category term="Jekyll" /><category term="update" /><summary type="html">It’s well known that programmers dislike meetings… a lot. But have you ever wondered why programmers dislike meetings so much compared to other people? The answer is simple but obvious once pointed out: meetings are more costly to them.</summary></entry><entry><title type="html">How to add Latex to Minimal Mistakes</title><link href="http://localhost:4000/blog/How-to-add-mathjax-to-minimal-mistakes/" rel="alternate" type="text/html" title="How to add Latex to Minimal Mistakes" /><published>2019-07-24T00:00:00+02:00</published><updated>2019-07-24T00:00:00+02:00</updated><id>http://localhost:4000/blog/How-to-add-mathjax-to-minimal-mistakes</id><content type="html" xml:base="http://localhost:4000/blog/How-to-add-mathjax-to-minimal-mistakes/">&lt;p&gt;In one of my
+&lt;a href=&quot;http://www.janmeppe.com/blog/how-to-change-theme-to-minimal-mistakes/&quot;&gt;previous&lt;/a&gt;
+blog posts I show you how to set up the Minimal Mistakes theme for
+your Github page.
+In this blog post I show how to add Latex support to your Minimal
+Mistakes jekyll blog and is largely based on
+&lt;a href=&quot;https://sort-care.github.io/Latex-on-Blog/&quot;&gt;this&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;step-1-set-markdown-engine-to-kramdown&quot;&gt;Step 1. Set markdown engine to kramdown&lt;/h2&gt;
+
+&lt;p&gt;In your &lt;code class=&quot;highlighter-rouge&quot;&gt;_config.yml&lt;/code&gt; change the engine to kramdown as follows&lt;/p&gt;
+
+&lt;div class=&quot;language-yml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# Build settings&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;markdown&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;kramdown&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;remote_theme&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;mmistakes/minimal-mistakes&lt;/span&gt;
+&lt;span class=&quot;nn&quot;&gt;...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;step-2-copy-over-scriptshtml&quot;&gt;Step 2. Copy over &lt;code class=&quot;highlighter-rouge&quot;&gt;scripts.html&lt;/code&gt;&lt;/h2&gt;
+
+&lt;p&gt;This is where stuff gets a little bit tricky. This blog was set up by
+forking &lt;a href=&quot;https://github.com/mmistakes/mm-github-pages-starter&quot;&gt;this&lt;/a&gt;
+repo and then using the original repo as a remote theme. To get Latex
+support we first have to go to the original Minimal Mistakes repo
+&lt;a href=&quot;https://github.com/mmistakes/minimal-mistakes&quot;&gt;here&lt;/a&gt; and copy over
+&lt;code class=&quot;highlighter-rouge&quot;&gt;minimal-mistakes/_includes/scripts.html&lt;/code&gt; locally to our
+&lt;code class=&quot;highlighter-rouge&quot;&gt;_includes/scripts.html&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;step-3-modify-scriptshtml&quot;&gt;Step 3. Modify &lt;code class=&quot;highlighter-rouge&quot;&gt;scripts.html&lt;/code&gt;&lt;/h2&gt;
+
+&lt;p&gt;We are now going to modify &lt;code class=&quot;highlighter-rouge&quot;&gt;scripts.html&lt;/code&gt; and &lt;strong&gt;append&lt;/strong&gt; the following content:&lt;/p&gt;
+
+&lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;text/javascript&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;async&lt;/span&gt;
+	&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;text/x-mathjax-config&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+   &lt;span class=&quot;nx&quot;&gt;MathJax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Hub&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+     &lt;span class=&quot;na&quot;&gt;extensions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;tex2jax.js&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+     &lt;span class=&quot;na&quot;&gt;jax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;input/TeX&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;output/HTML-CSS&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+     &lt;span class=&quot;na&quot;&gt;tex2jax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+       &lt;span class=&quot;na&quot;&gt;inlineMath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'$'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'$'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;\\&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;(&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;\\&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+       &lt;span class=&quot;na&quot;&gt;displayMath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'$$'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'$$'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;\\&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;[&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;\\&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+       &lt;span class=&quot;na&quot;&gt;processEscapes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;
+     &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+     &lt;span class=&quot;s2&quot;&gt;&quot;HTML-CSS&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;availableFonts&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;TeX&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+   &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Note that this overrides any other include file in the remote
+theme. So the contents of the original file in the remote theme will
+be overwritten. This means that this fix/update is liable to break
+with new updates. Be mindful of this.&lt;/p&gt;
+
+&lt;h2 id=&quot;step-4-thats-it&quot;&gt;Step 4. That’s it!&lt;/h2&gt;
+
+&lt;p&gt;If you did everything properly then this should render nicely:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;e^{i \pi} = -1&lt;/script&gt;
+
+&lt;h1 id=&quot;subscribe&quot;&gt;Subscribe&lt;/h1&gt;
+
+&lt;!-- Begin Mailchimp Signup Form --&gt;
+&lt;link href=&quot;//cdn-images.mailchimp.com/embedcode/horizontal-slim-10_7.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+	#mc_embed_signup{background:#fff; clear:left; font:14px Helvetica,Arial,sans-serif; width:100%;}
+	/* Add your own Mailchimp form style overrides in your site stylesheet or in this style block.
+	   We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
+&lt;/style&gt;
+
+&lt;div id=&quot;mc_embed_signup&quot;&gt;
+&lt;form action=&quot;https://gmail.us3.list-manage.com/subscribe/post?u=92fe86c389878585bc87837e8&amp;amp;id=50543deff9&quot; method=&quot;post&quot; id=&quot;mc-embedded-subscribe-form&quot; name=&quot;mc-embedded-subscribe-form&quot; class=&quot;validate&quot; target=&quot;_blank&quot; novalidate=&quot;&quot;&gt;
+    &lt;div id=&quot;mc_embed_signup_scroll&quot;&gt;
+	&lt;label for=&quot;mce-EMAIL&quot;&gt;Liked this article and want to hear more?&lt;/label&gt;
+	&lt;input type=&quot;email&quot; value=&quot;&quot; name=&quot;EMAIL&quot; class=&quot;email&quot; id=&quot;mce-EMAIL&quot; placeholder=&quot;email address&quot; required=&quot;&quot; /&gt;
+    &lt;!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups--&gt;
+    &lt;div style=&quot;position: absolute; left: -5000px;&quot; aria-hidden=&quot;true&quot;&gt;&lt;input type=&quot;text&quot; name=&quot;b_92fe86c389878585bc87837e8_50543deff9&quot; tabindex=&quot;-1&quot; value=&quot;&quot; /&gt;&lt;/div&gt;
+    &lt;div class=&quot;clear&quot;&gt;&lt;input type=&quot;submit&quot; value=&quot;Subscribe&quot; name=&quot;subscribe&quot; id=&quot;mc-embedded-subscribe&quot; class=&quot;button&quot; /&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/form&gt;
+&lt;/div&gt;
+
+&lt;!--End mc_embed_signup--&gt;</content><author><name>Gordon Engelke</name></author><category term="Jekyll" /><category term="update" /><summary type="html">In one of my previous blog posts I show you how to set up the Minimal Mistakes theme for your Github page. In this blog post I show how to add Latex support to your Minimal Mistakes jekyll blog and is largely based on this.</summary></entry><entry><title type="html">Invalid US-ASCII character “\xE2” on line 54 workaround</title><link href="http://localhost:4000/blog/invalid-US-ASCII-character/" rel="alternate" type="text/html" title="Invalid US-ASCII character &quot;\xE2&quot; on line 54 workaround" /><published>2019-07-21T00:00:00+02:00</published><updated>2019-07-21T00:00:00+02:00</updated><id>http://localhost:4000/blog/invalid-US-ASCII-character</id><content type="html" xml:base="http://localhost:4000/blog/invalid-US-ASCII-character/">&lt;p&gt;In this blog post I cover the infamous “Invalid US-ASCII character
+&quot;\xE2&quot; on line 54” error that seems to plague people when trying to
+serve their sites locally. OK, I actually don’t fix the problem but I
+create a workaround.&lt;/p&gt;
+
+&lt;h1 id=&quot;the-problem&quot;&gt;The problem&lt;/h1&gt;
+
+&lt;p&gt;Have you ever ran into this issue?&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Error:  Invalid US-ASCII character &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;E2&quot;&lt;/span&gt; on line 54
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I ran into this issue when trying to serve my jekyll site locally&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ jekyll serve
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And then this happened.&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Configuration file: /Users/janmeppe/Github-blog/rainymood.github.io/_config.yml
+            Source: /Users/janmeppe/Github-blog/rainymood.github.io
+       Destination: /Users/janmeppe/Github-blog/rainymood.github.io/_site
+ Incremental build: disabled. Enable with &lt;span class=&quot;nt&quot;&gt;--incremental&lt;/span&gt;
+      Generating...
+Invalid theme folder: _sass
+      Remote Theme: Using theme mmistakes/minimal-mistakes
+       Jekyll Feed: Generating feed &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;posts
+   GitHub Metadata: No GitHub API authentication could be found. Some fields may be missing or have incorrect data.
+  Conversion error: Jekyll::Converters::Scss encountered an error &lt;span class=&quot;k&quot;&gt;while &lt;/span&gt;converting &lt;span class=&quot;s1&quot;&gt;'assets/css/main.scss'&lt;/span&gt;:
+                    Invalid US-ASCII character &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;E2&quot;&lt;/span&gt; on line 54
+jekyll 3.8.5 | Error:  Invalid US-ASCII character &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;E2&quot;&lt;/span&gt; on line 54
+&lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;the-solution&quot;&gt;The solution&lt;/h1&gt;
+
+&lt;p&gt;After scouring the internet trying many solutions such as the solution presented &lt;a href=&quot;https://talk.jekyllrb.com/t/how-to-deal-with--sass-converting-errors/911/3&quot;&gt;here&lt;/a&gt; and &lt;a href=&quot;https://github.com/jekyll/jekyll/issues/4268&quot;&gt;this one&lt;/a&gt;, 
+I found a very simple solution &lt;a href=&quot;https://talk.jekyllrb.com/t/locale-problems/1213/2&quot;&gt;here&lt;/a&gt; that works great!&lt;/p&gt;
+
+&lt;p&gt;Create a new file called &lt;code class=&quot;highlighter-rouge&quot;&gt;Rakefile&lt;/code&gt; with this content&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:build&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;system&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;env LANG=&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;en_US.UTF-8&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; bundle exec jekyll serve&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This sets the locale encoding to the correct one and should allow you to serve your site locally, finally!&lt;/p&gt;
+
+&lt;p&gt;I spiced mine up a little bit and it looks like this&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;task&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:build&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;system&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;env LANG=&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;en_US.UTF-8&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; bundle exec jekyll serve -l -o --drafts&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;-l&lt;/code&gt; flag turns on live reload, which makes the website rebuild automatically when it detects a change. The &lt;code class=&quot;highlighter-rouge&quot;&gt;-o&lt;/code&gt; flag opens &lt;code class=&quot;highlighter-rouge&quot;&gt;localhost&lt;/code&gt; when serving it and the &lt;code class=&quot;highlighter-rouge&quot;&gt;--drafts&lt;/code&gt; flag allows me to create draft posts so that I can preview them locally before pushing them to my blog.&lt;/p&gt;
+
+&lt;p&gt;Now you can build the website using&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;rake build
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Et voilà!&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Configuration file: /Users/janmeppe/Github-blog/rainymood.github.io/_config.yml
+            Source: /Users/janmeppe/Github-blog/rainymood.github.io
+       Destination: /Users/janmeppe/Github-blog/rainymood.github.io/_site
+ Incremental build: disabled. Enable with &lt;span class=&quot;nt&quot;&gt;--incremental&lt;/span&gt;
+      Generating...
+Invalid theme folder: _sass
+      Remote Theme: Using theme mmistakes/minimal-mistakes
+       Jekyll Feed: Generating feed &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;posts
+   GitHub Metadata: No GitHub API authentication could be found. Some fields may be missing or have incorrect data.
+                    &lt;span class=&quot;k&quot;&gt;done in &lt;/span&gt;13.275 seconds.
+ Auto-regeneration: enabled &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'/Users/janmeppe/Github-blog/rainymood.github.io'&lt;/span&gt;
+    Server address: http://127.0.0.1:4000
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;subscribe&quot;&gt;Subscribe&lt;/h1&gt;
+
+&lt;!-- Begin Mailchimp Signup Form --&gt;
+&lt;link href=&quot;//cdn-images.mailchimp.com/embedcode/horizontal-slim-10_7.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+	#mc_embed_signup{background:#fff; clear:left; font:14px Helvetica,Arial,sans-serif; width:100%;}
+	/* Add your own Mailchimp form style overrides in your site stylesheet or in this style block.
+	   We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
+&lt;/style&gt;
+
+&lt;div id=&quot;mc_embed_signup&quot;&gt;
+&lt;form action=&quot;https://gmail.us3.list-manage.com/subscribe/post?u=92fe86c389878585bc87837e8&amp;amp;id=50543deff9&quot; method=&quot;post&quot; id=&quot;mc-embedded-subscribe-form&quot; name=&quot;mc-embedded-subscribe-form&quot; class=&quot;validate&quot; target=&quot;_blank&quot; novalidate=&quot;&quot;&gt;
+    &lt;div id=&quot;mc_embed_signup_scroll&quot;&gt;
+	&lt;label for=&quot;mce-EMAIL&quot;&gt;Liked this article and want to hear more?&lt;/label&gt;
+	&lt;input type=&quot;email&quot; value=&quot;&quot; name=&quot;EMAIL&quot; class=&quot;email&quot; id=&quot;mce-EMAIL&quot; placeholder=&quot;email address&quot; required=&quot;&quot; /&gt;
+    &lt;!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups--&gt;
+    &lt;div style=&quot;position: absolute; left: -5000px;&quot; aria-hidden=&quot;true&quot;&gt;&lt;input type=&quot;text&quot; name=&quot;b_92fe86c389878585bc87837e8_50543deff9&quot; tabindex=&quot;-1&quot; value=&quot;&quot; /&gt;&lt;/div&gt;
+    &lt;div class=&quot;clear&quot;&gt;&lt;input type=&quot;submit&quot; value=&quot;Subscribe&quot; name=&quot;subscribe&quot; id=&quot;mc-embedded-subscribe&quot; class=&quot;button&quot; /&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/form&gt;
+&lt;/div&gt;
+
+&lt;!--End mc_embed_signup--&gt;</content><author><name>Gordon Engelke</name></author><category term="Jekyll" /><category term="update" /><summary type="html">In this blog post I cover the infamous “Invalid US-ASCII character &quot;\xE2&quot; on line 54” error that seems to plague people when trying to serve their sites locally. OK, I actually don’t fix the problem but I create a workaround.</summary></entry><entry><title type="html">How to change Jekyll theme to Minimal Mistakes</title><link href="http://localhost:4000/blog/how-to-change-theme-to-minimal-mistakes/" rel="alternate" type="text/html" title="How to change Jekyll theme to Minimal Mistakes" /><published>2019-07-16T00:00:00+02:00</published><updated>2019-07-16T00:00:00+02:00</updated><id>http://localhost:4000/blog/how-to-change-theme-to-minimal-mistakes</id><content type="html" xml:base="http://localhost:4000/blog/how-to-change-theme-to-minimal-mistakes/">&lt;p&gt;Recently I migrated my whole blog from the Cayman theme to the Minimal Mistakes theme, which can be found &lt;a href=&quot;https://mmistakes.github.io/minimal-mistakes/&quot;&gt;here&lt;/a&gt;. This blog post explains how to quickly get up and running with the Minimal Mistakes theme.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Before&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-06-16-how-to-change-theme-to-minimal-mistakes/blog-cayman-theme.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;After&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-06-16-how-to-change-theme-to-minimal-mistakes/blog-minimal-mistakes-theme.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Setting this is up is ridiculously simple if you know what you’re doing. I am making this blog post because I want to save people the headache of spending a whole day debugging something they don’t actually have to because they followed the wrong instructions.&lt;/p&gt;
+
+&lt;p&gt;This post assumes that you are going to run your blog using &lt;a href=&quot;https://pages.github.com&quot;&gt;Github pages&lt;/a&gt;. Note that you can only have 1 Github pages repo that points towards &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;username&amp;gt;github.io&lt;/code&gt;, all other Github pages are going to point towards &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;username&amp;gt;github.io/&amp;lt;repo-name&amp;gt;&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;step-1-fork-the-minimal-mistakes-starter-repo&quot;&gt;Step 1. Fork the minimal-mistakes starter repo&lt;/h2&gt;
+
+&lt;p&gt;Go to the Minimal Mistakes Github pages starter &lt;a href=&quot;https://github.com/mmistakes/mm-github-pages-starter&quot;&gt;found here&lt;/a&gt; and fork the repo.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-06-16-how-to-change-theme-to-minimal-mistakes/001-fork.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;step-2-change-the-repo-name&quot;&gt;Step 2. Change the repo name&lt;/h2&gt;
+
+&lt;p&gt;Click on &lt;code class=&quot;highlighter-rouge&quot;&gt;settings&lt;/code&gt; and change the repository name. I chose to rename the repo to &lt;code class=&quot;highlighter-rouge&quot;&gt;minimal-mistakes&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Option 1&lt;/strong&gt; If you rename the repo to &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;username&amp;gt;.github.io&lt;/code&gt; then your Github pages will be hosted on &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;username&amp;gt;.github.io&lt;/code&gt;. For me this becomes &lt;code class=&quot;highlighter-rouge&quot;&gt;rainymood.github.io&lt;/code&gt; which can be found &lt;a href=&quot;https://rainymood.github.io&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Option 2&lt;/strong&gt; If you rename it to anything else, say &lt;code class=&quot;highlighter-rouge&quot;&gt;minimal-mistakes&lt;/code&gt;, then your Github pages will be hosted on &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;username&amp;gt;.github.io/&amp;lt;repo-name&amp;gt;&lt;/code&gt;. For me this becomes &lt;code class=&quot;highlighter-rouge&quot;&gt;rainymood.github.io/minimal-mistakes&lt;/code&gt; which can be found &lt;a href=&quot;https://rainymood.github.io/minimal-mistakes&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-06-16-how-to-change-theme-to-minimal-mistakes/002-edit.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;step-3-thats-it&quot;&gt;Step 3. That’s it!&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;It’s that simple.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Don’t be like me and waste a full day debugging something you don’t actually have to. Just fork the repo and start publishing!&lt;/p&gt;
+
+&lt;p&gt;This is what the final product looks like and you can find it &lt;a href=&quot;https://rainymood.github.io/minimal-mistakes&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2019-06-16-how-to-change-theme-to-minimal-mistakes/003-done.jpg&quot; /&gt;&lt;/p&gt;
+
+&lt;!-- Begin Mailchimp Signup Form --&gt;
+&lt;link href=&quot;//cdn-images.mailchimp.com/embedcode/horizontal-slim-10_7.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+	#mc_embed_signup{background:#fff; clear:left; font:14px Helvetica,Arial,sans-serif; width:100%;}
+	/* Add your own Mailchimp form style overrides in your site stylesheet or in this style block.
+	   We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
+&lt;/style&gt;
+
+&lt;div id=&quot;mc_embed_signup&quot;&gt;
+&lt;form action=&quot;https://gmail.us3.list-manage.com/subscribe/post?u=92fe86c389878585bc87837e8&amp;amp;id=50543deff9&quot; method=&quot;post&quot; id=&quot;mc-embedded-subscribe-form&quot; name=&quot;mc-embedded-subscribe-form&quot; class=&quot;validate&quot; target=&quot;_blank&quot; novalidate=&quot;&quot;&gt;
+    &lt;div id=&quot;mc_embed_signup_scroll&quot;&gt;
+	&lt;label for=&quot;mce-EMAIL&quot;&gt;Liked this article and want to hear more?&lt;/label&gt;
+	&lt;input type=&quot;email&quot; value=&quot;&quot; name=&quot;EMAIL&quot; class=&quot;email&quot; id=&quot;mce-EMAIL&quot; placeholder=&quot;email address&quot; required=&quot;&quot; /&gt;
+    &lt;!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups--&gt;
+    &lt;div style=&quot;position: absolute; left: -5000px;&quot; aria-hidden=&quot;true&quot;&gt;&lt;input type=&quot;text&quot; name=&quot;b_92fe86c389878585bc87837e8_50543deff9&quot; tabindex=&quot;-1&quot; value=&quot;&quot; /&gt;&lt;/div&gt;
+    &lt;div class=&quot;clear&quot;&gt;&lt;input type=&quot;submit&quot; value=&quot;Subscribe&quot; name=&quot;subscribe&quot; id=&quot;mc-embedded-subscribe&quot; class=&quot;button&quot; /&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/form&gt;
+&lt;/div&gt;
+
+&lt;!--End mc_embed_signup--&gt;</content><author><name>Gordon Engelke</name></author><category term="Jekyll" /><category term="update" /><summary type="html">Recently I migrated my whole blog from the Cayman theme to the Minimal Mistakes theme, which can be found here. This blog post explains how to quickly get up and running with the Minimal Mistakes theme.</summary></entry><entry><title type="html">Welcome to Jekyll!</title><link href="http://localhost:4000/blog/welcome-to-jekyll/" rel="alternate" type="text/html" title="Welcome to Jekyll!" /><published>2019-04-18T21:34:30+02:00</published><updated>2019-04-18T21:34:30+02:00</updated><id>http://localhost:4000/blog/welcome-to-jekyll</id><content type="html" xml:base="http://localhost:4000/blog/welcome-to-jekyll/">&lt;p&gt;You’ll find this post in your &lt;code class=&quot;highlighter-rouge&quot;&gt;_posts&lt;/code&gt; directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run &lt;code class=&quot;highlighter-rouge&quot;&gt;jekyll serve&lt;/code&gt;, which launches a web server and auto-regenerates your site when a file is updated.&lt;/p&gt;
+
+&lt;p&gt;To add new posts, simply add a file in the &lt;code class=&quot;highlighter-rouge&quot;&gt;_posts&lt;/code&gt; directory that follows the convention &lt;code class=&quot;highlighter-rouge&quot;&gt;YYYY-MM-DD-name-of-post.ext&lt;/code&gt; and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.&lt;/p&gt;
+
+&lt;p&gt;Jekyll also offers powerful support for code snippets:&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;print_hi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Hi, &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;print_hi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Tom'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#=&amp;gt; prints 'Hi, Tom' to STDOUT.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Check out the &lt;a href=&quot;https://jekyllrb.com/docs/home&quot;&gt;Jekyll docs&lt;/a&gt; for more info on how to get the most out of Jekyll. File all bugs/feature requests at &lt;a href=&quot;https://github.com/jekyll/jekyll&quot;&gt;Jekyll’s GitHub repo&lt;/a&gt;. If you have questions, you can ask them on &lt;a href=&quot;https://talk.jekyllrb.com/&quot;&gt;Jekyll Talk&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- Begin Mailchimp Signup Form --&gt;
+&lt;link href=&quot;//cdn-images.mailchimp.com/embedcode/horizontal-slim-10_7.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+	#mc_embed_signup{background:#fff; clear:left; font:14px Helvetica,Arial,sans-serif; width:100%;}
+	/* Add your own Mailchimp form style overrides in your site stylesheet or in this style block.
+	   We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
+&lt;/style&gt;
+
+&lt;div id=&quot;mc_embed_signup&quot;&gt;
+&lt;form action=&quot;https://gmail.us3.list-manage.com/subscribe/post?u=92fe86c389878585bc87837e8&amp;amp;id=50543deff9&quot; method=&quot;post&quot; id=&quot;mc-embedded-subscribe-form&quot; name=&quot;mc-embedded-subscribe-form&quot; class=&quot;validate&quot; target=&quot;_blank&quot; novalidate=&quot;&quot;&gt;
+    &lt;div id=&quot;mc_embed_signup_scroll&quot;&gt;
+	&lt;label for=&quot;mce-EMAIL&quot;&gt;Liked this article and want to hear more?&lt;/label&gt;
+	&lt;input type=&quot;email&quot; value=&quot;&quot; name=&quot;EMAIL&quot; class=&quot;email&quot; id=&quot;mce-EMAIL&quot; placeholder=&quot;email address&quot; required=&quot;&quot; /&gt;
+    &lt;!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups--&gt;
+    &lt;div style=&quot;position: absolute; left: -5000px;&quot; aria-hidden=&quot;true&quot;&gt;&lt;input type=&quot;text&quot; name=&quot;b_92fe86c389878585bc87837e8_50543deff9&quot; tabindex=&quot;-1&quot; value=&quot;&quot; /&gt;&lt;/div&gt;
+    &lt;div class=&quot;clear&quot;&gt;&lt;input type=&quot;submit&quot; value=&quot;Subscribe&quot; name=&quot;subscribe&quot; id=&quot;mc-embedded-subscribe&quot; class=&quot;button&quot; /&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/form&gt;
+&lt;/div&gt;
+
+&lt;!--End mc_embed_signup--&gt;</content><author><name>Gordon Engelke</name></author><category term="Jekyll" /><category term="update" /><summary type="html">You’ll find this post in your _posts directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run jekyll serve, which launches a web server and auto-regenerates your site when a file is updated.</summary></entry></feed>
