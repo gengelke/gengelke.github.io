@@ -42,10 +42,10 @@
                 <li><a href="{{item.github}}" target="_blank" rel="noopener"><i class="fa fa-github"></i>&nbsp;{{item.title}}</a></li>
                 {% endif %}
                 {% if item.about %}
-                <li><a href="{{item.about}}" target="_blank" rel="noopener"><i class="fa fa-info-circle"></i>&nbsp;{{item.title}}</a></li>
+                <li><a href="{{item.about}}" rel="noopener"><i class="fa fa-info-circle"></i>&nbsp;{{item.title}}</a></li>
                 {% endif %}
                 {% if item.mail %}
-                <li><a href="{{item.mail}}" target="_blank" rel="noopener"><i class="fa fa-envelope"></i>&nbsp;{{item.title}}</a></li>
+                <li><a href="{{item.mail}}" rel="noopener"><i class="fa fa-envelope"></i>&nbsp;{{item.title}}</a></li>
                 {% endif %}
                 {% endfor %}
                 {% endfor %}
