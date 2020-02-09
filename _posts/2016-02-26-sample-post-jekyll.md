@@ -2,6 +2,7 @@
 title:  "Sample post"
 published: true
 permalink: samplepost.html
+sidebar: false
 summary: "This is some summary frontmatter for my sample post."
 tags: [news, getting_started]
 ---

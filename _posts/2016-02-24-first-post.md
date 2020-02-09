@@ -1,6 +1,7 @@
 ---
 title:  "Welcome to Jekyll!"
 categories: jekyll update
+sidebar: false
 permalink: myupdate.html
 tags: [news]
 ---
