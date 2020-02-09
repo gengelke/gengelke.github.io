@@ -18,4 +18,6 @@ Theme updates:
 - sidebars configurable per page
 - hello world
 
+Added some text with working copy on an iPhone 
+
 {% include links.html %}
