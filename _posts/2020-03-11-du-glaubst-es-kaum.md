@@ -2,6 +2,7 @@
 title:  "Du glaubst es kaum"
 categories: jekyll update
 permalink: du-glaubst-es-kaum.html
+sidebar: false
 tags: [news, palim]
 ---
 
